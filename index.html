@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人工智能应用工程师（高级）考试练习系统</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --primary:#1a5276; --primary-l:#2e86c1; --primary-bg:#eaf2f8;
+  --bg:#f0f3f7; --card:#ffffff; --text:#2c3e50; --muted:#8395a7;
+  --green:#27ae60; --green-bg:#eafaf1; --red:#e74c3c; --red-bg:#fdedec;
+  --orange:#f39c12; --purple:#8e44ad; --teal:#16a085;
+  --border:#dfe6ec; --radius:10px;
+}
+html { -webkit-text-size-adjust:100%; }
+body { font-family:'Microsoft YaHei','微软雅黑','PingFang SC',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:15px; line-height:1.65; }
+.screen { display:none; }
+.screen.active { display:block; }
+.wrap { max-width:920px; margin:0 auto; padding:24px 16px 48px; }
+button { font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+.hidden { display:none !important; }
+
+/* ===== 欢迎页 ===== */
+.hero { background:linear-gradient(135deg,#1a5276 0%,#2e86c1 100%); color:#fff; border-radius:14px; padding:34px 28px 30px; text-align:center; box-shadow:0 6px 24px rgba(26,82,118,.28); }
+.hero-badge { display:inline-block; font-size:11px; letter-spacing:3px; opacity:.85; border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:2px 14px; margin-bottom:14px; }
+.hero h1 { font-size:26px; font-weight:700; letter-spacing:1px; }
+.hero h1 .h1-sub { font-size:17px; font-weight:400; opacity:.92; }
+.hero-meta { margin-top:10px; font-size:13px; opacity:.9; }
+.hero-meta b { font-weight:700; }
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:18px 0 22px; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px 8px; text-align:center; }
+.stat-num { font-size:24px; font-weight:700; color:var(--primary); line-height:1.2; }
+.stat-label { font-size:12px; color:var(--muted); margin-top:3px; }
+.sec-title { font-size:15px; font-weight:700; margin:4px 0 12px; display:flex; align-items:center; gap:8px; }
+.sec-title::before { content:''; width:4px; height:16px; background:var(--primary-l); border-radius:2px; display:inline-block; }
+.mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.mode-btn { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px 16px 14px; text-align:left; transition:all .15s; position:relative; display:block; width:100%; }
+.mode-btn:hover:not(:disabled) { border-color:var(--primary-l); box-shadow:0 4px 14px rgba(46,134,193,.16); transform:translateY(-2px); }
+.mode-btn:disabled { opacity:.45; cursor:not-allowed; }
+.mode-btn .m-icon { font-size:22px; margin-right:9px; vertical-align:-3px; }
+.mode-btn .m-name { font-size:16px; font-weight:700; color:var(--primary); }
+.mode-btn .m-count { position:absolute; top:12px; right:12px; font-size:11px; color:var(--muted); background:var(--bg); border-radius:10px; padding:1px 9px; }
+.mode-btn .m-desc { display:block; font-size:12.5px; color:var(--muted); margin-top:6px; line-height:1.5; }
+.mode-btn.primary-opt { grid-column:1 / -1; background:linear-gradient(135deg,#1a5276,#2e86c1); border:none; }
+.mode-btn.primary-opt .m-name { color:#fff; font-size:18px; }
+.mode-btn.primary-opt .m-desc { color:rgba(255,255,255,.85); }
+.mode-btn.primary-opt .m-count { color:#fff; background:rgba(255,255,255,.18); }
+.type-legend { margin-top:22px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; }
+.type-legend .tl-row { display:flex; flex-wrap:wrap; gap:8px 14px; font-size:13px; color:var(--text); }
+.tag { display:inline-block; padding:1px 10px; border-radius:11px; font-size:12px; font-weight:700; color:#fff; }
+.t-s { background:#2e86c1; } .t-m { background:#8e44ad; } .t-j { background:#16a085; } .t-d { background:#d35400; }
+.foot-note { margin-top:18px; text-align:center; font-size:12px; color:var(--muted); line-height:1.8; }
+.foot-note a { color:var(--primary-l); text-decoration:underline; }
+
+/* ===== 练习页 ===== */
+.quiz-head { position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.04); }
+.quiz-head-in { max-width:920px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.ghost-btn { font-size:13px; color:var(--primary); border:1px solid var(--primary-l); border-radius:8px; padding:5px 13px; background:#fff; transition:all .15s; white-space:nowrap; }
+.ghost-btn:hover { background:var(--primary-bg); }
+.ghost-btn.danger { color:var(--red); border-color:var(--red); }
+.ghost-btn.danger:hover { background:var(--red-bg); }
+.quiz-head-mid { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; }
+.mode-chip { font-size:12px; font-weight:700; color:#fff; background:var(--primary-l); border-radius:11px; padding:2px 12px; }
+#q-progress { font-size:14px; font-weight:700; color:var(--primary); }
+#timer { font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.progress-track { height:4px; background:var(--border); }
+#progress-fill { height:100%; background:linear-gradient(90deg,var(--primary),var(--primary-l)); width:0%; transition:width .25s; }
+.nav-panel { max-width:920px; margin:10px auto 0; padding:0 16px; display:none; }
+.nav-panel.open { display:block; }
+.nav-box { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+.nav-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:6px; }
+.nav-cell { height:34px; border-radius:7px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--muted); border:1px solid transparent; transition:all .12s; }
+.nav-cell.answered { background:var(--primary-bg); color:var(--primary); border-color:#bcd6ea; }
+.nav-cell.correct { background:var(--green-bg); color:var(--green); border-color:#a9dfbf; }
+.nav-cell.wrong { background:var(--red-bg); color:var(--red); border-color:#f5b7b1; }
+.nav-cell.current { outline:2.5px solid var(--primary-l); outline-offset:1px; }
+.nav-cell.flagged::after { content:''; position:absolute; }
+.nav-cell { position:relative; }
+.nav-cell .dot { position:absolute; top:2px; right:3px; width:6px; height:6px; border-radius:50%; background:var(--orange); }
+.nav-legend { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:10px; font-size:12px; color:var(--muted); }
+.nav-legend i { display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+.quiz-body { max-width:920px; margin:0 auto; padding:16px 16px 40px; }
+.q-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 22px 22px; box-shadow:0 2px 10px rgba(0,0,0,.03); }
+.q-top { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:12px; }
+.q-score { font-size:12px; color:var(--muted); background:var(--bg); border-radius:10px; padding:1px 9px; }
+.q-no { font-size:12.5px; color:var(--muted); margin-left:auto; }
+.flag-btn { font-size:12px; color:var(--muted); border:1px solid var(--border); border-radius:8px; padding:2px 10px; }
+.flag-btn.on { color:var(--orange); border-color:var(--orange); background:#fef5e7; }
+.q-stem { font-size:16px; font-weight:600; line-height:1.75; margin-bottom:16px; }
+.q-opts { display:flex; flex-direction:column; gap:9px; }
+.opt { display:flex; align-items:flex-start; gap:11px; border:1.5px solid var(--border); border-radius:10px; padding:11px 14px; cursor:pointer; transition:all .13s; font-size:14.5px; line-height:1.6; background:#fff; }
+.opt:hover { border-color:var(--primary-l); background:#f8fbfd; }
+.opt .opt-key { flex:none; width:25px; height:25px; border-radius:50%; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--muted); margin-top:1px; transition:all .13s; }
+.opt.sel { border-color:var(--primary-l); background:var(--primary-bg); }
+.opt.sel .opt-key { background:var(--primary-l); border-color:var(--primary-l); color:#fff; }
+.opt.correct { border-color:var(--green); background:var(--green-bg); }
+.opt.correct .opt-key { background:var(--green); border-color:var(--green); color:#fff; }
+.opt.wrong { border-color:var(--red); background:var(--red-bg); }
+.opt.wrong .opt-key { background:var(--red); border-color:var(--red); color:#fff; }
+.opt.dim { opacity:.55; }
+.opt.locked { cursor:default; }
+.opt.locked:hover { border-color:var(--border); }
+.opt.locked.correct:hover { border-color:var(--green); }
+.opt.locked.wrong:hover { border-color:var(--red); }
+.confirm-row { margin-top:14px; text-align:center; }
+.btn { display:inline-block; border-radius:10px; padding:10px 26px; font-size:15px; font-weight:700; background:var(--primary-l); color:#fff; transition:all .15s; }
+.btn:hover { background:var(--primary); box-shadow:0 4px 12px rgba(26,82,118,.3); }
+.btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
+.btn.green { background:var(--green); } .btn.green:hover { background:#1e8a4c; }
+.btn.ghost-w { background:transparent; color:var(--primary-l); border:1.5px solid var(--primary-l); }
+.btn.ghost-w:hover { background:var(--primary-bg); }
+.q-feedback { margin-top:15px; border-radius:10px; padding:11px 15px; font-size:14.5px; font-weight:700; display:none; }
+.q-feedback.show { display:block; }
+.q-feedback.ok { background:var(--green-bg); color:var(--green); border:1px solid #a9dfbf; }
+.q-feedback.bad { background:var(--red-bg); color:var(--red); border:1px solid #f5b7b1; }
+.q-exp { margin-top:13px; border-top:1px dashed var(--border); padding-top:13px; display:none; }
+.q-exp.show { display:block; }
+.exp-title { font-size:13px; font-weight:700; color:var(--primary); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.exp-title::before { content:'💡'; font-size:14px; }
+.exp-body { font-size:13.5px; color:#4a5a6a; line-height:1.8; white-space:pre-line; }
+.kp-tags { margin-top:9px; display:flex; flex-wrap:wrap; gap:6px; }
+.kp-tags span { font-size:11.5px; color:var(--primary); background:var(--primary-bg); border:1px solid #c9dff0; border-radius:10px; padding:1px 10px; }
+.short-area { width:100%; min-height:130px; border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; font-family:inherit; font-size:14px; line-height:1.7; resize:vertical; color:var(--text); }
+.short-area:focus { outline:none; border-color:var(--primary-l); }
+.self-grade { margin-top:12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.self-grade .sg-label { font-size:13.5px; font-weight:700; color:var(--text); }
+.sg-btn { font-size:13.5px; font-weight:700; border-radius:8px; padding:6px 18px; border:1.5px solid var(--border); color:var(--muted); background:#fff; }
+.sg-btn.yes.on { border-color:var(--green); color:#fff; background:var(--green); }
+.sg-btn.no.on { border-color:var(--red); color:#fff; background:var(--red); }
+.quiz-actions { display:flex; gap:10px; margin-top:16px; align-items:center; }
+.quiz-actions .spacer { flex:1; }
+.nav-arrow { flex:1; text-align:center; border-radius:10px; padding:11px 10px; font-size:15px; font-weight:700; border:1.5px solid var(--primary-l); color:var(--primary-l); background:#fff; transition:all .15s; }
+.nav-arrow:hover:not(:disabled) { background:var(--primary-bg); }
+.nav-arrow:disabled { opacity:.35; cursor:not-allowed; }
+.nav-arrow.finish { background:var(--primary-l); color:#fff; border-color:var(--primary-l); }
+.kbd-hint { text-align:center; font-size:11.5px; color:var(--muted); margin-top:14px; }
+.kbd-hint b { background:#eef2f6; border:1px solid var(--border); border-radius:4px; padding:0 5px; font-weight:600; }
+
+/* ===== 结果页 ===== */
+.result-hero { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:30px 20px; text-align:center; margin-bottom:16px; }
+.score-big { font-size:52px; font-weight:700; color:var(--primary); line-height:1.15; font-variant-numeric:tabular-nums; }
+.score-big .sm { font-size:20px; color:var(--muted); font-weight:600; }
+.pass-chip { display:inline-block; margin-top:8px; font-size:14px; font-weight:700; border-radius:16px; padding:4px 22px; }
+.pass-chip.pass { background:var(--green-bg); color:var(--green); border:1px solid #a9dfbf; }
+.pass-chip.fail { background:var(--red-bg); color:var(--red); border:1px solid #f5b7b1; }
+.result-meta { margin-top:12px; font-size:13px; color:var(--muted); }
+.r-table { width:100%; border-collapse:collapse; font-size:14px; background:var(--card); border-radius:var(--radius); overflow:hidden; }
+.r-table-wrap { border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:16px; }
+.r-table-wrap h3 { background:var(--card); padding:12px 16px 0; font-size:15px; }
+.r-table th, .r-table td { padding:10px 14px; text-align:center; border-top:1px solid var(--border); }
+.r-table th { background:var(--primary-bg); color:var(--primary); font-size:13px; }
+.r-table td:first-child, .r-table th:first-child { text-align:left; }
+.r-table td b { color:var(--primary); }
+.r-btns { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:20px; }
+.wrong-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; overflow:hidden; }
+.wrong-item .wi-head { padding:12px 16px; cursor:pointer; display:flex; gap:10px; align-items:flex-start; }
+.wrong-item .wi-no { flex:none; font-size:12px; font-weight:700; color:#fff; background:var(--red); border-radius:6px; padding:1px 8px; margin-top:2px; }
+.wrong-item .wi-stem { font-size:14px; font-weight:600; flex:1; }
+.wrong-item .wi-arrow { color:var(--muted); transition:transform .2s; flex:none; margin-top:3px; }
+.wrong-item.open .wi-arrow { transform:rotate(90deg); }
+.wrong-item .wi-body { display:none; padding:0 16px 14px 42px; }
+.wrong-item.open .wi-body { display:block; }
+.wi-ans { font-size:13.5px; margin-bottom:5px; }
+.wi-ans .u { color:var(--red); font-weight:700; }
+.wi-ans .r { color:var(--green); font-weight:700; }
+
+/* ===== 响应式 ===== */
+@media (max-width:640px) {
+  .wrap { padding:14px 10px 40px; }
+  .hero { padding:24px 14px 22px; }
+  .hero h1 { font-size:20px; }
+  .hero h1 .h1-sub { display:block; font-size:15px; }
+  .stats-row { grid-template-columns:repeat(2,1fr); gap:8px; }
+  .mode-grid { grid-template-columns:1fr; }
+  .quiz-body { padding:12px 10px 32px; }
+  .q-card { padding:15px 13px 17px; }
+  .q-stem { font-size:15px; }
+  .quiz-actions { flex-wrap:wrap; }
+  .nav-arrow { flex:1 1 40%; }
+  .kbd-hint { display:none; }
+  .quiz-head-in { padding:8px 10px; }
+  .r-table th, .r-table td { padding:8px 6px; font-size:13px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 欢迎页 ===== -->
+<div id="screen-welcome" class="screen active">
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-badge">AI ENGINEER · EXAM TRAINER</div>
+      <h1>人工智能应用工程师<span class="h1-sub">（高级）理论练习</span></h1>
+      <p class="hero-meta">题量 <b>84</b> 题 · 满分 <b>100</b> 分 · 考试窗口 2026-09-15 16:59 至 09-18 08:10</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="st-practiced">0</div><div class="stat-label">已练习题数</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-acc">--</div><div class="stat-label">累计正确率</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-wrong">0</div><div class="stat-label">错题本</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-best">--</div><div class="stat-label">模拟考最佳</div></div>
+    </div>
+    <div class="sec-title">选择练习模式</div>
+    <div class="mode-grid">
+      <button class="mode-btn primary-opt" data-mode="mock">
+        <span class="m-icon">📝</span><span class="m-name">模拟考试</span><span class="m-count">84题 · 100分</span>
+        <span class="m-desc">按真实试卷结构整卷作答（单选40+多选20+判断20+简答4），交卷后统一评分，客观题自动判分、简答题对照参考答案自评</span>
+      </button>
+      <button class="mode-btn" data-mode="seq">
+        <span class="m-icon">📖</span><span class="m-name">顺序练习</span><span class="m-count">84题</span>
+        <span class="m-desc">按题号顺序逐题作答，答完即时判分并显示答案解析</span>
+      </button>
+      <button class="mode-btn" data-mode="rand">
+        <span class="m-icon">🔀</span><span class="m-name">随机练习</span><span class="m-count">84题</span>
+        <span class="m-desc">全部题目随机乱序，检验真实掌握程度，防止背题号</span>
+      </button>
+      <button class="mode-btn" data-mode="wrong" id="btn-wrong-mode">
+        <span class="m-icon">🎯</span><span class="m-name">错题重练</span><span class="m-count" id="wrong-count">0题</span>
+        <span class="m-desc">专项攻克错题本中的题目，答对自动移出错题本</span>
+      </button>
+      <button class="mode-btn" data-mode="browse">
+        <span class="m-icon">⚡</span><span class="m-name">背题速览</span><span class="m-count">84题</span>
+        <span class="m-desc">直接显示正确答案与解析，适合考前突击快速过一遍</span>
+      </button>
+    </div>
+    <div class="type-legend">
+      <div class="sec-title" style="margin-top:0">试卷结构</div>
+      <div class="tl-row">
+        <span><span class="tag t-s">单选题</span> 40题 × 1.0分 = 40分</span>
+        <span><span class="tag t-m">多选题</span> 20题 × 1.5分 = 30分</span>
+        <span><span class="tag t-j">判断题</span> 20题 × 0.5分 = 10分</span>
+        <span><span class="tag t-d">简答题</span> 4题 × 5.0分 = 20分</span>
+      </div>
+    </div>
+    <p class="foot-note">数据保存在本机浏览器中，换浏览器/清缓存后记录会重置<br><a href="javascript:void(0)" id="btn-clear-record">清空全部练习记录</a></p>
+  </div>
+</div>
+
+<!-- ===== 练习页 ===== -->
+<div id="screen-quiz" class="screen">
+  <header class="quiz-head">
+    <div class="quiz-head-in">
+      <button id="btn-exit" class="ghost-btn danger">退出</button>
+      <div class="quiz-head-mid">
+        <span id="mode-label" class="mode-chip">顺序练习</span>
+        <span id="q-progress">1/84</span>
+        <span id="timer">00:00</span>
+      </div>
+      <button id="btn-nav-toggle" class="ghost-btn">答题卡</button>
+    </div>
+  </header>
+  <div class="progress-track"><div id="progress-fill"></div></div>
+  <div id="nav-panel" class="nav-panel">
+    <div class="nav-box">
+      <div id="nav-grid" class="nav-grid"></div>
+      <div class="nav-legend" id="nav-legend"></div>
+    </div>
+  </div>
+  <main class="quiz-body">
+    <div id="q-card" class="q-card"></div>
+    <div class="quiz-actions">
+      <button id="btn-prev" class="nav-arrow">← 上一题</button>
+      <button id="btn-flag" class="flag-btn" style="padding:10px 16px;">⚑ 标记本题</button>
+      <button id="btn-next" class="nav-arrow">下一题 →</button>
+      <button id="btn-submit" class="nav-arrow finish hidden">交 卷</button>
+    </div>
+    <p class="kbd-hint">快捷键：<b>A</b>~<b>D</b> 选项 · <b>Enter</b> 确认/下一题 · <b>←</b><b>→</b> 翻题 · <b>F</b> 标记</p>
+  </main>
+</div>
+
+<!-- ===== 结果页 ===== -->
+<div id="screen-result" class="screen">
+  <div class="wrap" id="result-body"></div>
+</div>
+
+<script>
+'use strict';
+/* ===== 题库：t类型 s单选 m多选 j判断 d简答 ===== */
+const QUESTIONS = [
+{id:1,t:'s',q:'以下哪项不属于智能体的环境属性分类（ ）',o:['完全可观察 vs 部分可观察','开源 vs 闭源','确定性 vs 随机性','静态 vs 动态'],a:'B',e:'智能体环境属性包括可观察性、确定性、情节性/连续性、静态/动态、离散/连续、单智能体/多智能体等维度，开源/闭源是软件属性，不是环境分类。',k:['智能体环境属性','环境分类维度']},
+{id:2,t:'s',q:'Skill 设计中"单一职责原则"是指（ ）',o:['一个 Skill 只能处理一种数据格式','一个 Skill 只负责完成一项明确的功能','一个 Skill 只能被调用一次','一个 Skill 只能由一个开发者维护'],a:'B',e:'单一职责原则要求每个 Skill 只负责一项明确的功能，职责清晰，便于复用、测试和维护，是 Skill 设计的核心原则之一。',k:['Skill设计原则','单一职责']},
+{id:3,t:'s',q:'智能体（Agent）的核心特征不包括以下哪一项（ ）',o:['反应性','自主性','被动性','社会性'],a:'C',e:'智能体的核心特征包括自主性（Autonomy）、反应性（Reactivity）、主动性（Proactivity）和社会性（Social Ability），被动性不属于智能体的特征。',k:['智能体核心特征','自主性与主动性']},
+{id:4,t:'s',q:'大模型"微调（Fine-tuning）"的含义是（ ）',o:['删除部分参数','只修改模型名称','完全重新训练模型','在预训练模型基础上用特定数据进一步训练'],a:'D',e:'微调是在预训练大模型的基础上，使用特定领域或任务的数据进行进一步训练，使模型适配特定场景，相比全量训练成本更低。',k:['微调概念','预训练模型适配']},
+{id:5,t:'s',q:'AI项目与传统软件项目最大的区别在于（ ）',o:['以数据和模型为核心，不确定性更高','需要更多人员','代码量更大','开发时间更长'],a:'A',e:'AI项目以数据和模型为核心，数据质量和模型效果具有不确定性，研发过程更具探索性，这是与传统软件项目的最大区别。',k:['AI项目特点','不确定性管理']},
+{id:6,t:'s',q:'在RAG流程中，"重排序（Rerank）"的作用是（ ）',o:['对检索结果按时间排序','对生成文本重新排列','对文档按字数排序','对检索结果按相关性重新排序'],a:'D',e:'重排序（Rerank）使用更精确的相关性评分模型对初筛的检索结果进行重新排序，提升 Top-K 结果的相关性质量。',k:['RAG优化技术','重排序机制']},
+{id:7,t:'s',q:'"领域自适应"的主要目标是（ ）',o:['让通用模型在特定领域表现更好','让模型体积更小','让模型支持更多语言','让模型运行更快'],a:'A',e:'领域自适应（Domain Adaptation）旨在将在通用数据上训练的模型适配到特定领域，提升模型在目标领域的性能表现。',k:['领域自适应','迁移学习']},
+{id:8,t:'s',q:'在典型的RAG架构中，第一步通常是（ ）',o:['用户提问','生成回答','相似度检索','文档向量化'],a:'D',e:'RAG的离线处理阶段首先需要将文档进行分块和向量化（Embedding），构建向量索引，这是后续检索的基础。',k:['RAG工作流程','文档向量化']},
+{id:9,t:'s',q:'以下哪个是典型的AI编程智能体产品（ ）',o:['GitHub Copilot','Excel','Photoshop','Word'],a:'A',e:'GitHub Copilot 是典型的AI编程助手产品，基于大语言模型，能够根据上下文自动生成代码建议。',k:['AI编程产品','GitHub Copilot']},
+{id:10,t:'s',q:'大语言模型（LLM）的"大"主要指的是（ ）',o:['物理尺寸大','文件体积大','运行内存大','参数数量和训练数据量大'],a:'D',e:'大语言模型的"大"主要指参数规模大（通常数十亿到数千亿参数）以及训练数据规模大，这是其涌现能力的基础。',k:['大语言模型定义','参数量规模']},
+{id:11,t:'s',q:'AI解决方案的"等保合规"主要涉及什么标准（ ）',o:['项目管理标准','产品质量标准','网络安全等级保护制度','软件开发规范'],a:'C',e:'等保合规即网络安全等级保护制度合规，是我国网络安全领域的基本制度，AI系统需按要求完成相应等级的安全保护备案和测评。',k:['等保合规','网络安全等级保护']},
+{id:12,t:'s',q:'以下哪种微调方法属于参数高效微调（PEFT）（ ）',o:['数据增强','LoRA','从头训练','全参数微调'],a:'B',e:'LoRA（Low-Rank Adaptation）是典型的参数高效微调方法，只训练少量低秩矩阵参数，大幅降低微调成本。',k:['参数高效微调','LoRA方法']},
+{id:13,t:'s',q:'Transformer架构中，核心的注意力机制是（ ）',o:['单头注意力','卷积注意力','多头自注意力','循环注意力'],a:'C',e:'Transformer 的核心是多头自注意力（Multi-Head Self-Attention）机制，能够并行计算序列中各位置之间的依赖关系。',k:['Transformer架构','多头自注意力']},
+{id:14,t:'s',q:'大模型的"上下文窗口"指的是（ ）',o:['模型的显示界面','模型的训练时间窗口','模型的物理尺寸','模型一次能处理的最大token数量'],a:'D',e:'上下文窗口（Context Window）是指大模型一次推理能够处理的最大 token 数量，决定了模型可以利用的上下文信息长度。',k:['上下文窗口','Token限制']},
+{id:15,t:'s',q:'行业大模型适配的首要步骤通常是（ ）',o:['直接部署通用大模型','修改模型架构','行业数据收集与清洗','更换硬件设备'],a:'C',e:'行业大模型适配首先需要收集和清洗行业专属数据，构建高质量的领域数据集，这是后续微调或RAG的基础。',k:['行业大模型适配','数据准备']},
+{id:16,t:'s',q:'以下哪个不是主流的RAG开源框架（ ）',o:['PyTorch','LangChain','Haystack','LlamaIndex'],a:'A',e:'PyTorch 是深度学习框架，不是RAG框架。LangChain、LlamaIndex 和 Haystack 都是主流的RAG开源开发框架。',k:['RAG开源框架','LangChain与LlamaIndex']},
+{id:17,t:'s',q:'AI项目全生命周期通常不包括以下哪个阶段（ ）',o:['需求分析','模型开发','数据准备','硬件制造'],a:'D',e:'AI项目全生命周期包括需求分析、数据准备、模型开发、测试评估、部署上线、运维迭代等阶段，硬件制造不属于AI项目生命周期。',k:['AI项目生命周期','阶段划分']},
+{id:18,t:'s',q:'卷积神经网络（CNN）最擅长处理的数据类型是（ ）',o:['图像数据','文本数据','表格数据','时序数据'],a:'A',e:'卷积神经网络通过卷积核提取局部空间特征，具有参数共享和平移不变性等特点，特别适合处理图像等网格结构数据。',k:['卷积神经网络','CNN适用场景']},
+{id:19,t:'s',q:'以下哪种不是多智能体的典型协作模式（ ）',o:['独立式协作','混合式协作','集中式协作','分布式协作'],a:'A',e:'多智能体协作模式包括集中式（中心控制）、分布式（对等协商）和混合式，独立式不涉及协作，不属于协作模式。',k:['协作模式分类','集中式与分布式']},
+{id:20,t:'s',q:'以下哪项不是大语言模型的典型应用场景（ ）',o:['代码编写','文本生成','机械加工','翻译'],a:'C',e:'大语言模型主要应用于自然语言处理相关场景，机械加工属于物理制造领域，不是大语言模型的典型应用。',k:['大模型应用场景','自然语言处理']},
+{id:21,t:'s',q:'以下哪种智能体类型是基于"条件-动作"规则进行决策的（ ）',o:['基于效用的智能体','简单反射智能体','基于模型的反射智能体','基于目标的智能体'],a:'B',e:'简单反射智能体（Simple Reflex Agent）根据当前感知直接选择动作，基于条件-动作规则（if-then rules）进行决策，不考虑历史感知。',k:['智能体类型分类','简单反射智能体']},
+{id:22,t:'s',q:'以下哪项是 Skill 可组合性带来的主要优势（ ）',o:['降低代码可读性','可以通过组合简单 Skill 实现复杂任务','增加系统耦合度','减少 Skill 的数量'],a:'B',e:'可组合性是 Skill 的重要优势，通过将多个简单、通用的 Skill 灵活组合，可以快速构建复杂任务的解决方案，提高开发效率和复用性。',k:['Skill组合','复用性']},
+{id:23,t:'s',q:'循环神经网络（RNN）的主要特点是（ ）',o:['不需要训练数据','只能处理固定长度输入','具有记忆能力，适合处理序列数据','只适用于图像处理'],a:'C',e:'循环神经网络通过隐藏状态的循环连接具有记忆能力，能够处理变长序列数据，广泛应用于自然语言处理和时间序列分析。',k:['循环神经网络','序列数据处理']},
+{id:24,t:'s',q:'"反向传播算法"主要用于（ ）',o:['数据可视化','模型部署','数据预处理','神经网络参数更新'],a:'D',e:'反向传播（Backpropagation）是训练神经网络的核心算法，通过链式法则计算损失函数对各层参数的梯度，用于参数更新。',k:['反向传播算法','神经网络训练']},
+{id:25,t:'s',q:'AI项目需求分析阶段，最重要的工作是（ ）',o:['明确业务目标和评估指标','招聘算法工程师','采购服务器','选择开发框架'],a:'A',e:'需求分析阶段最重要的是明确业务目标、成功标准和可量化的评估指标，这是后续所有工作的方向指引。',k:['需求分析','评估指标设定']},
+{id:26,t:'s',q:'在企业级AI应用中，Skill 管理平台的核心功能不包括（ ）',o:['Skill 的注册与发现','Skill 的调用监控','Skill 的版本管理','员工考勤管理'],a:'D',e:'Skill 管理平台主要负责 Skill 的注册、发现、版本管理、调用监控、权限管理等功能，员工考勤不属于 Skill 管理范畴。',k:['Skill管理平台','企业级应用']},
+{id:27,t:'s',q:'评估一个 Skill 质量的核心指标是（ ）',o:['Skill 完成对应任务的准确率、稳定性和效率','Skill 的开发者级别','Skill 的名称是否好听','Skill 的代码行数多少'],a:'A',e:'评估 Skill 质量主要看其完成目标任务的效果，包括准确率、稳定性、响应速度、容错能力等实际表现，与代码量、名称等无关。',k:['Skill评估','质量指标']},
+{id:28,t:'s',q:'RAG的中文全称是（ ）',o:['递归算法生成','随机注意力生成','检索增强生成','正则表达式生成'],a:'C',e:'RAG（Retrieval-Augmented Generation）即检索增强生成，是一种结合检索系统和生成模型的技术框架。',k:['RAG基本概念','检索增强生成']},
+{id:29,t:'s',q:'Skill 与大模型的关系，以下说法正确的是（ ）',o:['大模型的所有能力都必须通过 Skill 才能使用','Skill 就是大模型本身','大模型可以作为 Skill 的实现方式之一','Skill 和大模型没有关系'],a:'C',e:'大模型是实现 Skill 的方式之一，Skill 还可以通过规则引擎、外部 API、传统算法等多种方式实现，二者是能力实现与能力封装的关系。',k:['Skill与大模型关系','能力实现']},
+{id:30,t:'s',q:'智能体与传统程序的本质区别在于（ ）',o:['智能体能够自主感知环境并做出决策','智能体不需要硬件支持','智能体运行速度更快','智能体使用的编程语言更高级'],a:'A',e:'智能体与传统程序的本质区别在于智能体具有自主性，能够感知环境、自主决策并采取行动以实现目标，而传统程序是被动执行预设指令。',k:['智能体定义','自主性特征']},
+{id:31,t:'s',q:'神经网络中，"激活函数"的主要作用是（ ）',o:['引入非线性变换能力','加速训练速度','减少参数数量','增加网络深度'],a:'A',e:'激活函数（Activation Function）为神经网络引入非线性变换能力，使网络能够学习和表示复杂的非线性关系。',k:['激活函数作用','非线性变换']},
+{id:32,t:'s',q:'RAG技术的主要目的是解决大语言模型的什么问题（ ）',o:['知识时效性和幻觉问题','训练速度慢','推理速度慢','模型体积过大'],a:'A',e:'RAG通过从外部知识库检索相关文档并作为上下文输入给大模型，有效解决了大模型知识截止、事实性幻觉和私有知识接入等问题。',k:['RAG技术优势','大模型幻觉问题']},
+{id:33,t:'s',q:'深度学习属于以下哪个领域的分支（ ）',o:['数据挖掘','传统编程','专家系统','机器学习'],a:'D',e:'深度学习是机器学习的一个分支，基于多层神经网络进行表示学习，是实现人工智能的重要技术路径。',k:['深度学习定义','机器学习分支']},
+{id:34,t:'s',q:'大模型的"涌现能力"是指（ ）',o:['小模型没有但大模型突然具备的能力','模型自动生成代码','模型突然变大','模型自我复制'],a:'A',e:'涌现能力（Emergent Abilities）是指当模型规模达到一定阈值后，突然展现出小模型不具备的复杂能力，如推理、创作等。',k:['涌现能力','大模型特性']},
+{id:35,t:'s',q:'以下哪项不属于AI伦理风险（ ）',o:['深度伪造滥用','模型精度不足','算法歧视','隐私泄露'],a:'B',e:'模型精度不足是技术性能问题，不属于伦理风险范畴。隐私泄露、算法歧视和深度伪造滥用都是典型的AI伦理风险。',k:['AI伦理风险','深度伪造']},
+{id:36,t:'s',q:'Prompt Engineering（提示工程）的核心目标是（ ）',o:['增加模型参数量','修改模型参数','通过优化输入提示获得更好的模型输出','加速模型训练'],a:'C',e:'提示工程通过设计和优化输入提示词的结构、内容和格式，引导大模型产出更高质量、更符合预期的输出结果。',k:['提示工程','Prompt优化']},
+{id:37,t:'s',q:'在智能体架构中，负责感知环境信息的模块是（ ）',o:['推理引擎','执行器','知识库','感知器'],a:'D',e:'感知器（Perception Module）负责接收和处理来自环境的感知信息，是智能体与外部环境交互的输入接口。',k:['智能体架构组成','感知模块功能']},
+{id:38,t:'s',q:'知识蒸馏（Knowledge Distillation）中，"教师模型"是指（ ）',o:['小而快的模型','教学用的模型','人工标注的模型','大而强的原始模型'],a:'D',e:'知识蒸馏中，教师模型（Teacher Model）通常是参数量大、性能强的原始模型，用于指导学生模型学习。',k:['知识蒸馏','教师-学生模型']},
+{id:39,t:'s',q:'以下哪种激活函数可以解决梯度消失问题（ ）',o:['ReLU','Tanh','Softmax','Sigmoid'],a:'A',e:'ReLU（Rectified Linear Unit）在正区间梯度恒为1，有效缓解了深层网络中的梯度消失问题，是目前最常用的激活函数之一。',k:['ReLU激活函数','梯度消失问题']},
+{id:40,t:'s',q:'RAG中的"向量数据库"主要作用是（ ）',o:['压缩模型参数','存储结构化数据','存储和检索高维向量表示','执行SQL查询'],a:'C',e:'向量数据库专门用于存储高维向量（Embedding），支持基于相似度的快速检索，是RAG系统中检索阶段的核心组件。',k:['向量数据库','相似度检索']},
+{id:41,t:'m',q:'以下属于RAG常用的向量数据库的有（ ）',o:['Chroma','Milvus','Weaviate','Pinecone'],a:'ABCD',e:'Chroma、Pinecone、Milvus 和 Weaviate 都是主流的向量数据库，用于存储和检索高维向量，是RAG系统的核心组件。',k:['向量数据库','主流产品']},
+{id:42,t:'m',q:'智能体的基本组成部分包括（ ）',o:['知识库','执行模块','推理/决策模块','感知模块'],a:'ABCD',e:'典型的智能体架构包含感知模块（接收环境信息）、推理/决策模块（处理信息并决策）、执行模块（执行动作）和知识库（存储知识和经验）。',k:['智能体架构','基本组成模块']},
+{id:43,t:'m',q:'通信运营商AI应用的典型场景包括（ ）',o:['网络优化','基站节能','智能客服','欺诈检测'],a:'ABCD',e:'通信运营商AI应用场景广泛，包括智能客服、网络优化、基站节能、欺诈检测、用户画像、精准营销等。',k:['通信AI场景','运营商数字化']},
+{id:44,t:'m',q:'RAG系统的典型组成部分包括（ ）',o:['大语言模型','检索模块','向量数据库','文档处理模块'],a:'ABCD',e:'完整的RAG系统包括文档处理（分块、向量化）、向量数据库（存储向量）、检索模块（相似度检索）和大语言模型（生成回答）。',k:['RAG系统组成','架构模块']},
+{id:45,t:'m',q:'多智能体系统的优势包括（ ）',o:['系统复杂度大幅降低','通信开销几乎为零','鲁棒性强','并行处理能力'],a:'CD',e:'多智能体系统具有并行处理能力强、鲁棒性好等优势。但多智能体系统复杂度更高，且需要智能体间通信，会产生通信开销，这不是其优势。',k:['多智能体优势','并行处理与鲁棒性']},
+{id:46,t:'m',q:'企业使用AI编程智能体需要关注的风险包括（ ）',o:['代码版权风险','安全漏洞风险','代码运行速度提升','代码质量风险'],a:'ABD',e:'企业使用AI编程智能体需关注代码版权、安全漏洞、代码质量等多方面风险。代码运行速度提升是性能优化目标，不是使用AI编程智能体的风险。',k:['企业风险管控','知识产权']},
+{id:47,t:'m',q:'行业大模型适配的常见方法包括（ ）',o:['更换模型架构','指令微调','RAG知识库增强','领域数据继续预训练'],a:'BCD',e:'行业大模型适配常用方法包括领域数据继续预训练、指令微调、RAG知识库增强等，一般不需要更换模型架构。',k:['行业适配方法','领域适配']},
+{id:48,t:'m',q:'通信运营商AI项目方案设计需考虑的关键因素包括（ ）',o:['算力资源规划','数据安全与隐私保护','只追求技术最新最前沿','完全不考虑项目成本'],a:'AB',e:'通信运营商AI项目设计需综合考虑数据安全与隐私保护、算力资源规划等关键因素。只追求技术前沿而忽视业务价值、完全不考虑成本都是错误的设计理念。',k:['方案设计因素','数据安全与算力规划']},
+{id:49,t:'m',q:'以下属于深度学习常用优化器的有（ ）',o:['SGD','RMSprop','ReLU','Adam'],a:'ABD',e:'SGD、Adam 和 RMSprop 都是常用的深度学习优化器，用于更新网络参数。ReLU 是激活函数，不是优化器。',k:['优化器','SGD与Adam']},
+{id:50,t:'m',q:'AI项目典型团队角色包括（ ）',o:['算法工程师','数据工程师','建筑设计师','财务会计师'],a:'AB',e:'AI项目团队通常包括算法工程师、数据工程师、产品经理、运维工程师、测试工程师、项目经理等角色。财务会计师和建筑设计师不是AI项目的典型团队角色。',k:['团队角色','算法与数据工程师']},
+{id:51,t:'m',q:'大语言模型的典型能力包括（ ）',o:['逻辑推理','文本理解','文本生成','代码生成'],a:'ABCD',e:'大语言模型具备多种能力，包括文本理解、文本生成、逻辑推理、代码生成、翻译、摘要等多种自然语言处理能力。',k:['自然语言处理','大模型能力']},
+{id:52,t:'m',q:'推理加速技术包括（ ）',o:['批处理','算子融合','KV缓存','模型并行'],a:'ABCD',e:'批处理、KV缓存、算子融合和模型并行都是常见的推理加速技术，从不同层面提升推理吞吐量和降低延迟。',k:['推理加速','并行计算']},
+{id:53,t:'m',q:'Transformer架构的核心组成包括（ ）',o:['层归一化','残差连接','自注意力机制','前馈神经网络'],a:'ABCD',e:'Transformer 的核心组件包括多头自注意力机制、前馈神经网络、层归一化和残差连接，这些共同构成了 Transformer 的基本单元。',k:['Transformer架构','核心组件']},
+{id:54,t:'m',q:'智能体的核心特性包括（ ）',o:['主动性','自主性','社会性','反应性'],a:'ABCD',e:'智能体具有四大核心特性：自主性（自主决策）、反应性（感知并响应环境）、主动性（主动追求目标）和社会性（与其他智能体交互）。',k:['智能体核心特性','四大特性']},
+{id:55,t:'m',q:'卷积神经网络的核心组件包括（ ）',o:['池化层','卷积层','循环层','全连接层'],a:'ABD',e:'CNN 的核心组件包括卷积层（提取特征）、池化层（降维）和全连接层（分类输出），循环层是 RNN 的组件。',k:['CNN核心组件','卷积与池化']},
+{id:56,t:'m',q:'参数高效微调（PEFT）方法包括（ ）',o:['全参数微调','Prompt Tuning','LoRA','Prefix Tuning'],a:'BCD',e:'LoRA、Prefix Tuning 和 Prompt Tuning 都属于参数高效微调方法，只训练少量参数。全参数微调需训练所有参数，不属于PEFT。',k:['参数高效微调','PEFT方法']},
+{id:57,t:'m',q:'AI编程智能体的典型功能包括（ ）',o:['代码编译执行','代码生成','代码补全','代码审查'],a:'BCD',e:'AI编程智能体具备代码补全、代码生成、代码审查、代码调试、代码解释、测试用例生成等多种编程辅助功能。代码编译执行是编译器和解释器的功能，不是AI编程智能体的典型功能。',k:['AI编程功能','代码全生命周期']},
+{id:58,t:'m',q:'多智能体协作的关键机制包括（ ）',o:['无需任何协调同步','各自完全独立运行','协商机制','通信机制'],a:'CD',e:'多智能体协作需要通信机制（信息共享）和协商机制（达成共识）作为关键机制。各自完全独立运行、无需协调同步都无法实现有效协作。',k:['协作机制','通信与协商']},
+{id:59,t:'m',q:'模型压缩技术包括（ ）',o:['量化','知识蒸馏','剪枝','数据增强'],a:'ABC',e:'量化、剪枝和知识蒸馏都是主流的模型压缩技术，用于减小模型体积和加速推理。数据增强是训练技术，不属于模型压缩。',k:['模型压缩技术','量化与剪枝']},
+{id:60,t:'m',q:'AI项目数据合规需要遵守的法律法规包括（ ）',o:['网络安全法','个人信息保护法','数据安全法','消费者权益保护法'],a:'ABCD',e:'AI项目数据合规需遵守《个人信息保护法》《数据安全法》《网络安全法》等专门法律，以及《消费者权益保护法》等相关法律。',k:['数据合规法规','三法体系']},
+{id:61,t:'j',q:'大模型涌现能力仅与模型参数量大小相关，与训练数据质量无关。（ ）',o:['对','错'],a:'B',e:'大模型涌现能力是参数量、训练数据规模、数据质量、训练方式等多因素共同作用的结果，并非仅由参数量决定。',k:['AI大模型','涌现能力影响因素']},
+{id:62,t:'j',q:'RAG技术可以彻底消除大语言模型的所有幻觉问题。（ ）',o:['对','错'],a:'B',e:'RAG可大幅降低大模型幻觉概率、提升回答真实性，但受检索精度、文档质量影响，无法彻底根除幻觉问题。',k:['RAG技术特性','大模型幻觉优化']},
+{id:63,t:'j',q:'模型迭代的合理触发场景包含业务需求变更、模型效果衰减、行业算法技术升级。（ ）',o:['对','错'],a:'A',e:'当业务需求调整、模型出现漂移性能下降、前沿算法可优化现有模型时，均需要启动模型迭代优化工作。',k:['模型迭代','迭代触发机制']},
+{id:64,t:'j',q:'ReLU激活函数能够有效缓解深层神经网络的梯度消失问题。（ ）',o:['对','错'],a:'A',e:'ReLU激活函数在正数区间梯度恒为1，避免了Sigmoid、Tanh函数的梯度饱和问题，可有效缓解梯度消失。',k:['深度学习基础','激活函数特性']},
+{id:65,t:'j',q:'AI项目交付管控中，进度管理、风险管理、成本管理均为核心管控环节。（ ）',o:['对','错'],a:'A',e:'完整的AI项目交付管控体系，涵盖进度、质量、风险、成本、范围五大核心管理维度，保障项目高效合规交付。',k:['项目交付管控','多维度管理体系']},
+{id:66,t:'j',q:'Prompt Engineering（提示工程）通过修改模型参数来提升大模型输出质量。（ ）',o:['对','错'],a:'B',e:'提示工程通过设计和优化输入提示词的结构、内容和格式来引导大模型产出更好结果，不修改模型参数。',k:['提示工程','Prompt优化']},
+{id:67,t:'j',q:'算法工程师、数据工程师、运维工程师均属于AI项目核心团队角色。（ ）',o:['对','错'],a:'A',e:'标准AI项目团队包含算法、数据、运维、产品、测试、项目经理等核心角色，分工支撑项目全流程落地。',k:['AI团队协作','项目核心角色']},
+{id:68,t:'j',q:'端边云协同架构中，边缘节点主要负责海量数据长期存储和全量模型训练。（ ）',o:['对','错'],a:'B',e:'边缘节点主打低延迟实时推理、数据预处理；云端负责海量数据存储、全量模型训练、全局算力调度。',k:['运营商AI架构','端边云协同原理']},
+{id:69,t:'j',q:'LoRA参数高效微调需要冻结大模型主体参数，仅训练少量低秩矩阵参数。（ ）',o:['对','错'],a:'A',e:'LoRA 是典型PEFT技术，核心理念为冻结预训练模型全部原始参数，仅训练少量低秩适配矩阵，大幅降低微调算力成本。',k:['大模型微调','LoRA微调原理']},
+{id:70,t:'j',q:'知识蒸馏中，学生模型通常是参数量大、性能强的原始模型。（ ）',o:['对','错'],a:'B',e:'知识蒸馏中，教师模型是参数量大、性能强的原始模型，学生模型是小而快的模型，由教师模型指导学习。',k:['知识蒸馏','教师-学生模型']},
+{id:71,t:'j',q:'多智能体分布式协作模式依赖中心节点统一调度，灵活性较差。（ ）',o:['对','错'],a:'B',e:'分布式多智能体协作无中心管控节点，各智能体对等协商、自主协作，具备高灵活性和可扩展性，集中式模式才依赖中心调度。',k:['多智能体协作','分布式协作模式']},
+{id:72,t:'j',q:'AI项目中的合规风险，仅包含数据隐私风险，无算法伦理风险。（ ）',o:['对','错'],a:'B',e:'AI项目合规风险涵盖数据合规、算法伦理、知识产权、网络安全、业务合规等多维度，算法歧视、算法滥用均属于核心伦理风险。',k:['风险管控','AI多维度合规风险']},
+{id:73,t:'j',q:'AI编程智能体可以独立完成代码生成、代码审查、Bug调试等全流程编程辅助工作。（ ）',o:['对','错'],a:'A',e:'主流AI编程智能体具备代码补全、批量代码生成、代码合规审查、自动调试修复、测试用例生成等全流程辅助能力。',k:['AI编程智能体','核心功能场景']},
+{id:74,t:'j',q:'智能体的核心自主性特征，是指智能体无需人工干预，可自主感知环境并完成目标决策。（ ）',o:['对','错'],a:'A',e:'自主性是智能体最核心的特征，区别于传统被动执行程序，智能体可独立感知环境、自主决策、主动完成既定任务。',k:['智能体核心特征','自主性原理']},
+{id:75,t:'j',q:'模型量化的核心目的是提升模型训练精度。（ ）',o:['对','错'],a:'B',e:'模型量化通过降低参数数值精度，实现模型体积压缩、推理加速、降低显存占用，不会提升模型精度，仅小幅损耗精度换取效率。',k:['算法优化','模型量化技术']},
+{id:76,t:'j',q:'AI项目数据准备阶段，数据标注、数据清洗属于核心工作，模型训练不属于该阶段。（ ）',o:['对','错'],a:'A',e:'AI项目数据准备阶段核心为数据采集、清洗、标注、增强，模型训练属于后续模型开发阶段工作。',k:['AI项目全生命周期','阶段工作划分']},
+{id:77,t:'j',q:'向量数据库主要用于存储结构化数据，支持SQL查询操作。（ ）',o:['对','错'],a:'B',e:'向量数据库专门用于存储高维向量（Embedding），支持基于相似度的快速检索，不用于存储结构化数据和SQL查询。',k:['向量数据库','相似度检索']},
+{id:78,t:'j',q:'简单反射智能体基于"条件-动作"规则进行决策，会考虑历史感知信息。（ ）',o:['对','错'],a:'B',e:'简单反射智能体仅根据当前感知直接选择动作，基于条件-动作规则决策，不考虑历史感知信息。',k:['简单反射智能体','智能体类型']},
+{id:79,t:'j',q:'AI项目质量管理仅需要管控模型精度，无需关注数据质量和代码质量。（ ）',o:['对','错'],a:'B',e:'AI项目全维度质量管理包含数据质量、模型质量、代码质量、文档质量四大核心模块，数据质量是模型效果的基础。',k:['AI项目管控','全流程质量管理']},
+{id:80,t:'j',q:'RAG重排序模块的作用是对初筛检索结果按相关性二次择优，提升问答精准度。（ ）',o:['对','错'],a:'A',e:'RAG检索初筛结果存在冗余、相关性不足问题，重排序模型可对结果精准打分排序，优化上下文输入质量。',k:['RAG框架','重排序优化机制']},
+{id:81,t:'d',q:'请简述RAG（检索增强生成）的基本工作流程，并说明其相比纯生成式大模型的优势。',ref:'RAG的基本工作流程包括：\n(1) 离线阶段：将文档进行分块处理，通过Embedding模型转换为向量表示，存储到向量数据库中；\n(2) 在线阶段：用户提问后，先将问题转换为向量，在向量数据库中检索最相关的文档片段；\n(3) 将检索到的相关文档与用户问题一起作为上下文输入给大语言模型；\n(4) 大模型基于检索到的知识生成准确的回答。\n相比纯生成式大模型的优势：\n(1) 解决知识时效性问题：可以实时更新知识库，获取最新信息；\n(2) 减少幻觉问题：基于真实文档生成回答，提高事实准确性；\n(3) 支持私有知识：可以接入企业内部文档和专有知识；\n(4) 可追溯性：回答来源可追溯到具体文档；\n(5) 成本更低：相比全量微调，RAG实现领域知识注入的成本更低。',k:['检索增强生成','RAG技术优势','RAG工作流程']},
+{id:82,t:'d',q:'请简述 Vibe Coding 的核心定义，并分点说明其三大核心理念与三大价值影响。',ref:'核心定义：Vibe Coding 是 Andrej Karpathy 提出的全新AI编程范式。开发者身份从"代码编写者"彻底转变为"意图阐述者"和"结果验收者"，不用手动编写具体代码，依靠自然语言向AI说明功能目标、预期效果，就能高效完成应用搭建。\n三大核心理念：\n(1) 意图驱动——从指令到诉求：使用者用自然语言描述最终想要实现的效果，不用说明代码编写方式，底层语法、落地细节交由AI处理，回归编程解决实际问题的本质；\n(2) 沉浸式迭代——极速反馈闭环：形成"描述-生成-验证-调优"完整闭环，使用者可以用自然语言随时提出修改需求，大幅压缩调试验证的时间；\n(3) 抽象跃升——聚焦业务逻辑：开发操作的最小单元从函数、变量升级为功能模块、业务场景，方便开发者把精力放在系统架构、顶层整体设计上。\n三大价值与影响：\n(1) 效率革命——释放创造力：编码效率成倍提升，开发者不用耗费精力处理重复性编码工作，可以专注架构设计、逻辑优化等创造性工作；\n(2) 编程民主化——人人皆可开发：打破编程专业门槛，无技术基础的人员也能依靠自然语言搭建应用，让各类创意可以快速落地普及；\n(3) 流程重塑——极致敏捷协作：改变传统瀑布式开发模式，重构需求、开发、测试的协作方式，灵活性更强，可以快速适配市场需求变动。',k:['Vibe Coding概念定义','三大核心理念','价值与行业影响','AI自然语言编程范式特点']},
+{id:83,t:'d',q:'请描述一下 IMA 的基本概念，并简述它包含的三大核心功能模块及各自作用。',ref:'IMA 全称为 intelligent memory assistant，即智能记忆助手，是腾讯推出的AI驱动知识管理工具，用于搭建个人与团队的"第二大脑"。\n三大核心功能模块：\n(1) 个人知识库：私人专属知识空间，用来存放个人文档、笔记、网页等各类资料；\n(2) 共享知识库：面向团队协作的知识空间，支持配置成员访问权限、成员加入方式；\n(3) 订阅知识库：支持订阅其他人对外分享的公开知识库。',k:['IMA基础概念','知识库模块']},
+{id:84,t:'d',q:'请简述AI项目全生命周期的主要阶段及各阶段的核心工作内容。',ref:'AI项目全生命周期主要包括以下阶段：\n(1) 需求分析阶段：明确业务目标、问题定义、成功标准和评估指标，进行可行性分析和价值评估；\n(2) 数据准备阶段：数据采集、数据清洗、数据标注、数据增强、数据集划分，构建高质量的训练数据集；\n(3) 模型开发阶段：算法选型、模型设计、模型训练、调参优化、模型评估，迭代优化模型性能；\n(4) 测试评估阶段：在测试集上全面评估模型性能，进行压力测试、安全测试、边界测试，验证是否达到验收标准；\n(5) 部署上线阶段：模型封装、部署环境搭建、系统集成、灰度发布，将模型部署到生产环境；\n(6) 运维迭代阶段：系统监控、性能维护、数据漂移检测、模型迭代更新，持续优化模型效果和系统稳定性；\n(7) 项目收尾阶段：项目验收、知识转移、文档归档、经验总结，完成项目交付。',k:['AI项目生命周期','阶段划分','核心工作内容']},
+];
+/* ===== 基础工具 ===== */
+var $id = function (i) { return document.getElementById(i); };
+var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+var store = {
+  get: function (k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return (v === null || v === undefined) ? d : v; } catch (e) { return d; } },
+  set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+var TYPE_META = {
+  s: { name: '单选题', cls: 't-s', score: 1.0 },
+  m: { name: '多选题', cls: 't-m', score: 1.5 },
+  j: { name: '判断题', cls: 't-j', score: 0.5 },
+  d: { name: '简答题', cls: 't-d', score: 5.0 }
+};
+var MODE_NAME = { seq: '顺序练习', rand: '随机练习', mock: '模拟考试', wrong: '错题重练', browse: '背题速览' };
+function isPractice(m) { return m === 'seq' || m === 'rand' || m === 'wrong'; }
+function fmt(sec) { var m = Math.floor(sec / 60), s = sec % 60; return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s; }
+function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } }
+
+var state = { mode: null, list: [], index: 0, answers: {}, shortText: {}, shortSelf: {}, revealed: {}, flagged: {}, pendingSel: '', sessionLog: [], startTime: 0, timerId: null, usedSec: 0, mockAuto: 0, mockStats: null };
+
+/* ===== 记录与错题本 ===== */
+function getRecords() { return store.get('aiexam_records', {}); }
+function getWrongBook() { return store.get('aiexam_wrong', []); }
+function recordAnswer(q, correct) {
+  var recs = getRecords();
+  var r = recs[q.id] || { c: 0, w: 0 };
+  if (correct) r.c++; else r.w++;
+  recs[q.id] = r; store.set('aiexam_records', recs);
+  var wrong = getWrongBook(); var i = wrong.indexOf(q.id);
+  if (!correct && i < 0) { wrong.push(q.id); store.set('aiexam_wrong', wrong); }
+  if (correct && i >= 0) { wrong.splice(i, 1); store.set('aiexam_wrong', wrong); }
+}
+function adjustWrongBook(qid, inWrong) {
+  var wrong = getWrongBook(); var i = wrong.indexOf(qid);
+  if (inWrong && i < 0) { wrong.push(qid); store.set('aiexam_wrong', wrong); }
+  if (!inWrong && i >= 0) { wrong.splice(i, 1); store.set('aiexam_wrong', wrong); }
+}
+function isCorrect(q, ans) {
+  if (!ans) return false;
+  if (q.t === 'm') return ans.split('').sort().join('') === q.a.split('').sort().join('');
+  return ans === q.a;
+}
+function answeredMock(q) { return q.t === 'd' ? String(state.shortText[q.id] || '').trim() !== '' : state.answers[q.id] !== undefined; }
+
+/* ===== 屏幕切换 ===== */
+function switchScreen(name) {
+  var ids = { welcome: 'screen-welcome', quiz: 'screen-quiz', result: 'screen-result' };
+  document.querySelectorAll('.screen').forEach(function (el) { el.classList.remove('active'); });
+  $id(ids[name]).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function stopTimer() { if (state.timerId) { clearInterval(state.timerId); state.timerId = null; } }
+function startTimer() {
+  stopTimer();
+  state.timerId = setInterval(function () { $id('timer').textContent = fmt(Math.floor((Date.now() - state.startTime) / 1000)); }, 1000);
+  $id('timer').textContent = '00:00';
+}
+
+/* ===== 欢迎页 ===== */
+function renderWelcome() {
+  var recs = getRecords(), ids = Object.keys(recs), c = 0, w = 0;
+  ids.forEach(function (id) { c += recs[id].c; w += recs[id].w; });
+  $id('st-practiced').textContent = ids.length;
+  $id('st-acc').textContent = (c + w) > 0 ? Math.round(c / (c + w) * 100) + '%' : '--';
+  var wrong = getWrongBook();
+  $id('st-wrong').textContent = wrong.length;
+  var best = store.get('aiexam_best', null);
+  $id('st-best').textContent = (best === null || best === undefined) ? '--' : best.toFixed ? best.toFixed(1) : best;
+  $id('wrong-count').textContent = wrong.length + '题';
+  $id('btn-wrong-mode').disabled = wrong.length === 0;
+}
+
+/* ===== 开始模式 ===== */
+function startMode(mode) {
+  var list;
+  if (mode === 'rand') { list = QUESTIONS.slice(); shuffle(list); }
+  else if (mode === 'wrong') { var wb = getWrongBook(); list = QUESTIONS.filter(function (q) { return wb.indexOf(q.id) >= 0; }); if (!list.length) { alert('错题本已是空的'); return; } }
+  else list = QUESTIONS.slice();
+  state.mode = mode; state.list = list; state.index = 0;
+  state.answers = {}; state.shortText = {}; state.shortSelf = {}; state.revealed = {}; state.flagged = {}; state.pendingSel = ''; state.sessionLog = [];
+  state.startTime = Date.now();
+  $id('mode-label').textContent = MODE_NAME[mode];
+  $id('btn-submit').classList.toggle('hidden', mode !== 'mock');
+  switchScreen('quiz');
+  startTimer();
+  renderQuestion(); renderNav(); updateProgress();
+}
+function exitToWelcome() { stopTimer(); state.mode = null; renderWelcome(); switchScreen('welcome'); }
+
+/* ===== 题目渲染 ===== */
+function curQ() { return state.list[state.index]; }
+function renderExp(q) {
+  var h = '<div class="q-exp show"><div class="exp-title">答案解析</div><div class="exp-body">' + esc(q.e || '（无解析）') + '</div>';
+  if (q.k && q.k.length) h += '<div class="kp-tags">' + q.k.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div>';
+  return h + '</div>';
+}
+function renderRef(q, withSelf) {
+  var h = '<div class="q-exp show"><div class="exp-title">参考答案</div><div class="exp-body">' + esc(q.ref) + '</div>';
+  if (q.k && q.k.length) h += '<div class="kp-tags">' + q.k.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div>';
+  h += '</div>';
+  if (withSelf) {
+    h += '<div class="self-grade"><span class="sg-label">自评掌握情况：</span>';
+    h += '<button class="sg-btn yes' + (state.shortSelf[q.id] === true ? ' on' : '') + '" data-v="yes">✔ 已掌握</button>';
+    h += '<button class="sg-btn no' + (state.shortSelf[q.id] === false ? ' on' : '') + '" data-v="no">✘ 未掌握</button>';
+    h += '</div>';
+  }
+  return h;
+}
+function renderQuestion() {
+  var q = curQ(); if (!q) return;
+  var tm = TYPE_META[q.t];
+  var answered = state.answers[q.id] !== undefined;
+  var html = '<div class="q-top">';
+  html += '<span class="tag ' + tm.cls + '">' + tm.name + '</span>';
+  html += '<span class="q-score">' + tm.score.toFixed(1) + '分</span>';
+  if (q.t === 'm' && state.mode !== 'browse') html += '<span class="q-score">选出所有正确项</span>';
+  html += '<span class="q-no">本题第' + (state.index + 1) + '题/共' + state.list.length + '题 · 原卷' + q.id + '号</span></div>';
+  html += '<div class="q-stem">' + esc(q.q) + '</div>';
+  if (q.t === 'd') {
+    if (state.mode === 'mock') {
+      html += '<textarea class="short-area" id="short-input" placeholder="在此默写/组织你的答案（可不填，交卷后对照参考答案自评）">' + esc(state.shortText[q.id] || '') + '</textarea>';
+    } else if (state.mode === 'browse') {
+      html += renderRef(q, false);
+    } else {
+      if (state.revealed[q.id] || state.shortSelf[q.id] !== undefined) html += renderRef(q, true);
+      else html += '<div class="confirm-row"><button class="btn ghost-w" id="btn-reveal">查看参考答案</button></div>';
+    }
+  } else {
+    var lock = false, sel = '';
+    if (state.mode === 'browse') lock = true;
+    else if (isPractice(state.mode) && answered) { lock = true; sel = state.answers[q.id]; }
+    else if (state.mode === 'mock') sel = state.answers[q.id] || '';
+    else if (q.t === 'm') sel = state.pendingSel;
+    html += '<div class="q-opts" id="opts">';
+    q.o.forEach(function (opt, i) {
+      var k = 'ABCD'[i], cls = 'opt';
+      if (state.mode === 'browse') { if (q.a.indexOf(k) >= 0) cls += ' correct'; cls += ' locked'; }
+      else if (lock) {
+        if (q.a.indexOf(k) >= 0) cls += ' correct';
+        else if (sel.indexOf(k) >= 0) cls += ' wrong';
+        else cls += ' dim';
+        cls += ' locked';
+      } else if (sel.indexOf(k) >= 0) cls += ' sel';
+      html += '<div class="' + cls + '" data-k="' + k + '"><span class="opt-key">' + (q.t === 'j' ? (k === 'A' ? '对' : '错') : k) + '</span><span class="opt-text">' + esc(opt) + '</span></div>';
+    });
+    html += '</div>';
+    if (q.t === 'm' && isPractice(state.mode) && !answered) {
+      html += '<div class="confirm-row"><button class="btn" id="btn-confirm" ' + (state.pendingSel ? '' : 'disabled') + '>确认答案</button></div>';
+    }
+    if (isPractice(state.mode) && answered) {
+      var ok = isCorrect(q, state.answers[q.id]);
+      html += '<div class="q-feedback show ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✔ 回答正确，本题得 ' + tm.score.toFixed(1) + ' 分' : '✘ 回答错误 ｜ 你的答案：' + state.answers[q.id] + ' ｜ 正确答案：' + q.a) + '</div>';
+    }
+    if (state.mode === 'browse' || (isPractice(state.mode) && answered)) html += renderExp(q);
+  }
+  $id('q-card').innerHTML = html;
+  var ta = $id('short-input');
+  if (ta) ta.addEventListener('input', function () { state.shortText[q.id] = ta.value; renderNav(); });
+  $id('btn-flag').classList.toggle('on', !!state.flagged[q.id]);
+  $id('btn-flag').innerHTML = state.flagged[q.id] ? '⚑ 已标记' : '⚑ 标记本题';
+}
+
+/* ===== 作答逻辑 ===== */
+function commitAnswer(q, ans) {
+  state.answers[q.id] = ans;
+  var ok = isCorrect(q, ans);
+  recordAnswer(q, ok);
+  state.sessionLog.push({ id: q.id, ok: ok });
+  renderQuestion(); renderNav(); updateProgress();
+  if (ok && state.index < state.list.length - 1) {
+    var qid = q.id;
+    setTimeout(function () {
+      if (state.mode && curQ() && curQ().id === qid && isCorrect(curQ(), state.answers[qid]) === true) next();
+    }, 900);
+  }
+}
+function onOptClick(k) {
+  var q = curQ(); if (!q || q.t === 'd' || state.mode === 'browse') return;
+  if (state.mode === 'mock') {
+    if (q.t === 'm') {
+      var cur = (state.answers[q.id] || '').split('');
+      var i = cur.indexOf(k);
+      if (i >= 0) cur.splice(i, 1); else cur.push(k);
+      state.answers[q.id] = cur.sort().join('');
+    } else state.answers[q.id] = k;
+    renderQuestion(); renderNav(); updateProgress();
+    return;
+  }
+  if (state.answers[q.id] !== undefined) return;
+  if (q.t === 'm') {
+    var cur2 = state.pendingSel.split(''); var i2 = cur2.indexOf(k);
+    if (i2 >= 0) cur2.splice(i2, 1); else cur2.push(k);
+    state.pendingSel = cur2.sort().join('');
+    renderQuestion();
+  } else commitAnswer(q, k);
+}
+function confirmMulti() {
+  var q = curQ();
+  if (q && state.pendingSel) commitAnswer(q, state.pendingSel);
+}
+function onSelfGrade(ok) {
+  var q = curQ();
+  var first = state.shortSelf[q.id] === undefined;
+  state.shortSelf[q.id] = ok;
+  if (first) { recordAnswer(q, ok); state.sessionLog.push({ id: q.id, ok: ok }); }
+  else adjustWrongBook(q.id, !ok);
+  renderQuestion(); renderNav(); updateProgress();
+}
+
+/* ===== 导航 ===== */
+function next() {
+  if (state.index >= state.list.length - 1) {
+    if (state.mode === 'mock') return;
+    if (state.mode === 'browse') { exitToWelcome(); return; }
+    finishPractice();
+    return;
+  }
+  state.index++; state.pendingSel = '';
+  renderQuestion(); renderNav(); updateProgress();
+  window.scrollTo(0, 0);
+}
+function prev() {
+  if (state.index <= 0) return;
+  state.index--; state.pendingSel = '';
+  renderQuestion(); renderNav(); updateProgress();
+  window.scrollTo(0, 0);
+}
+function updateProgress() {
+  var total = state.list.length;
+  $id('q-progress').textContent = (state.index + 1) + '/' + total;
+  $id('progress-fill').style.width = ((state.index + 1) / total * 100) + '%';
+  var last = state.index === total - 1;
+  $id('btn-prev').disabled = state.index === 0;
+  if (state.mode === 'mock') {
+    $id('btn-next').disabled = last;
+    $id('btn-next').textContent = '下一题 →';
+  } else {
+    $id('btn-next').disabled = false;
+    $id('btn-next').textContent = last ? (state.mode === 'browse' ? '完成速览 →' : '完成练习 →') : '下一题 →';
+  }
+}
+function toggleFlag() {
+  var q = curQ(); if (!q) return;
+  state.flagged[q.id] = !state.flagged[q.id];
+  renderQuestion(); renderNav();
+}
+function renderNav() {
+  var html = '';
+  state.list.forEach(function (q, i) {
+    var cls = 'nav-cell';
+    if (i === state.index) cls += ' current';
+    if (state.mode === 'mock') { if (answeredMock(q)) cls += ' answered'; }
+    else if (isPractice(state.mode)) {
+      if (q.t === 'd') { if (state.shortSelf[q.id] !== undefined) cls += state.shortSelf[q.id] ? ' correct' : ' wrong'; }
+      else if (state.answers[q.id] !== undefined) cls += isCorrect(q, state.answers[q.id]) ? ' correct' : ' wrong';
+    }
+    var dot = state.flagged[q.id] ? '<span class="dot"></span>' : '';
+    html += '<button class="' + cls + '" data-i="' + i + '">' + (i + 1) + dot + '</button>';
+  });
+  $id('nav-grid').innerHTML = html;
+  var lg = '';
+  if (state.mode === 'mock') {
+    var done = state.list.filter(answeredMock).length;
+    lg = '<span><i style="background:#f0f3f7;border:1px solid #dfe6ec"></i>未答</span><span><i style="background:#eaf2f8"></i>已答</span><span><i style="background:#f39c12"></i>标记</span><span>已作答 <b>' + done + '</b>/' + state.list.length + '</span>';
+  } else if (state.mode === 'browse') {
+    lg = '<span>点击题号可快速跳转</span>';
+  } else {
+    lg = '<span><i style="background:#f0f3f7;border:1px solid #dfe6ec"></i>未答</span><span><i style="background:#eafaf1;border:1px solid #a9dfbf"></i>答对</span><span><i style="background:#fdedec;border:1px solid #f5b7b1"></i>答错</span><span><i style="background:#f39c12"></i>标记</span>';
+  }
+  $id('nav-legend').innerHTML = lg;
+}
+
+/* ===== 交卷与结果 ===== */
+function submitMock() {
+  var un = state.list.filter(function (q) { return !answeredMock(q); });
+  var msg = un.length ? '还有 ' + un.length + ' 题未作答，确定交卷吗？' : '确定交卷并查看成绩吗？';
+  if (!confirm(msg)) return;
+  stopTimer();
+  state.usedSec = Math.floor((Date.now() - state.startTime) / 1000);
+  var stats = {}, auto = 0;
+  ['s', 'm', 'j', 'd'].forEach(function (t) { stats[t] = { n: 0, c: 0, sc: 0, full: 0 }; });
+  state.list.forEach(function (q) {
+    var st = stats[q.t]; st.n++; st.full += TYPE_META[q.t].score;
+    if (q.t === 'd') return;
+    if (state.answers[q.id] === undefined) return; // 未作答：按0分计但不计入练习统计与错题本
+    var ok = isCorrect(q, state.answers[q.id]);
+    recordAnswer(q, ok);
+    if (ok) { st.c++; st.sc += TYPE_META[q.t].score; auto += TYPE_META[q.t].score; }
+  });
+  state.mockStats = stats; state.mockAuto = auto;
+  renderMockResult();
+}
+function mockSelfScore() {
+  var sc = 0;
+  state.list.forEach(function (q) { if (q.t === 'd' && state.shortSelf[q.id] === true) sc += TYPE_META.d.score; });
+  return sc;
+}
+function mockSelfGrade(qid, ok) {
+  var q = null;
+  for (var i = 0; i < QUESTIONS.length; i++) if (QUESTIONS[i].id === qid) { q = QUESTIONS[i]; break; }
+  var first = state.shortSelf[qid] === undefined;
+  state.shortSelf[qid] = ok;
+  if (first) recordAnswer(q, ok);
+  else adjustWrongBook(qid, !ok);
+  renderMockResult();
+}
+function wrongItemHTML(q) {
+  var tm = TYPE_META[q.t];
+  var body = q.t === 'd'
+    ? '<div class="exp-body">' + esc(q.ref) + '</div>'
+    : '<div class="wi-ans">正确答案：<span class="r">' + q.a + '</span></div><div class="exp-body">' + esc(q.e) + '</div>';
+  return '<div class="wrong-item"><div class="wi-head"><span class="wi-no">' + q.id + '</span><span class="wi-stem"><span class="tag ' + tm.cls + '">' + tm.name + '</span> ' + esc(q.q) + '</span><span class="wi-arrow">▶</span></div><div class="wi-body">' + body + '</div></div>';
+}
+function renderMockResult() {
+  var st = state.mockStats;
+  var selfSc = mockSelfScore();
+  var total = state.mockAuto + selfSc;
+  var best = store.get('aiexam_best', 0);
+  if (total > best) { best = total; store.set('aiexam_best', best); }
+  var shorts = state.list.filter(function (q) { return q.t === 'd'; });
+  var selfGraded = shorts.filter(function (q) { return state.shortSelf[q.id] !== undefined; }).length;
+  var wrongObjs = state.list.filter(function (q) { return q.t !== 'd' && state.answers[q.id] !== undefined && !isCorrect(q, state.answers[q.id]); });
+  var unObjs = state.list.filter(function (q) { return q.t !== 'd' && state.answers[q.id] === undefined; });
+  var rows = ['s', 'm', 'j'].map(function (t) {
+    var m = TYPE_META[t], s = st[t];
+    return '<tr><td><span class="tag ' + m.cls + '">' + m.name + '</span></td><td>' + s.n + '</td><td>' + s.c + '</td><td><b>' + s.sc.toFixed(1) + '</b></td><td>' + s.full.toFixed(1) + '</td></tr>';
+  });
+  rows.push('<tr><td><span class="tag t-d">简答题</span></td><td>' + st.d.n + '</td><td>自评' + selfGraded + '</td><td><b>' + selfSc.toFixed(1) + '</b></td><td>' + st.d.full.toFixed(1) + '</td></tr>');
+  rows.push('<tr><td><b>合计</b></td><td><b>84</b></td><td>--</td><td><b>' + total.toFixed(1) + '</b></td><td><b>100</b></td></tr>');
+  var shortCards = shorts.map(function (q) {
+    var mine = String(state.shortText[q.id] || '').trim();
+    var h = '<div class="wrong-item open"><div class="wi-head"><span class="wi-no">' + q.id + '</span><span class="wi-stem"><span class="tag t-d">简答题</span> ' + esc(q.q) + '</span><span class="wi-arrow">▶</span></div><div class="wi-body">';
+    h += '<div class="exp-title" style="margin-top:4px">你的作答</div><div class="exp-body">' + (mine ? esc(mine) : '（未作答）') + '</div>';
+    h += '<div class="exp-title">参考答案</div><div class="exp-body">' + esc(q.ref) + '</div>';
+    h += '<div class="self-grade"><span class="sg-label">自评：</span>';
+    h += '<button class="sg-btn yes' + (state.shortSelf[q.id] === true ? ' on' : '') + '" data-qid="' + q.id + '" data-v="yes">✔ 已掌握（+5分）</button>';
+    h += '<button class="sg-btn no' + (state.shortSelf[q.id] === false ? ' on' : '') + '" data-qid="' + q.id + '" data-v="no">✘ 未掌握（0分）</button>';
+    h += '</div></div></div>';
+    return h;
+  }).join('');
+  var hint = selfGraded < shorts.length ? '<p style="font-size:13px;color:var(--orange);font-weight:700;text-align:center;margin-bottom:10px">⚠ 还有 ' + (shorts.length - selfGraded) + ' 道简答题未自评，自评后计入总分</p>' : '';
+  var wrongSec = wrongObjs.length ? '<div class="sec-title">答错的客观题（' + wrongObjs.length + '题，点击展开解析）</div>' + wrongObjs.map(wrongItemHTML).join('') : '';
+  var unSec = unObjs.length ? '<p style="font-size:12.5px;color:var(--muted);text-align:center">注：本次有 ' + unObjs.length + ' 道客观题未作答，按 0 分计</p>' : '';
+  $id('result-body').innerHTML =
+    '<div class="result-hero">' +
+    '<div class="score-big">' + total.toFixed(1) + '<span class="sm"> / 100</span></div>' +
+    '<div class="pass-chip ' + (total >= 60 ? 'pass' : 'fail') + '">' + (total >= 60 ? '合格（≥60分）' : '未达及格线（60分）') + '</div>' +
+    '<div class="result-meta">客观题自动判分 ' + state.mockAuto.toFixed(1) + ' 分 · 简答自评 ' + selfSc.toFixed(1) + ' 分 · 用时 ' + fmt(state.usedSec) + ' · 历史最佳 ' + best.toFixed(1) + ' 分</div>' +
+    '</div>' +
+    '<div class="r-table-wrap"><h3 style="padding-bottom:10px">题型得分明细</h3><table class="r-table"><tr><th>题型</th><th>题数</th><th>答对</th><th>得分</th><th>满分</th></tr>' + rows.join('') + '</table></div>' +
+    '<div class="sec-title">简答题对照自评</div>' + hint + shortCards + wrongSec + unSec +
+    '<div class="r-btns">' +
+    (getWrongBook().length ? '<button class="btn" data-act="wrong">错题重练（' + getWrongBook().length + '题）</button>' : '') +
+    '<button class="btn ghost-w" data-act="mock-again">再考一次</button>' +
+    '<button class="btn ghost-w" data-act="home">返回首页</button>' +
+    '</div>';
+  switchScreen('result');
+}
+function finishPractice() {
+  stopTimer();
+  state.usedSec = Math.floor((Date.now() - state.startTime) / 1000);
+  var log = state.sessionLog;
+  var total = log.length, correct = 0;
+  var wrongIds = [];
+  log.forEach(function (x) { if (x.ok) correct++; else wrongIds.push(x.id); });
+  var pct = total ? Math.round(correct / total * 100) : 0;
+  var wrongQs = wrongIds.map(function (id) { for (var i = 0; i < QUESTIONS.length; i++) if (QUESTIONS[i].id === id) return QUESTIONS[i]; return null; }).filter(Boolean);
+  var wrongSec = wrongQs.length ? '<div class="sec-title">本次答错题目（' + wrongQs.length + '题，点击展开解析）</div>' + wrongQs.map(wrongItemHTML).join('') : '<div style="text-align:center;color:var(--green);font-weight:700;padding:26px 0;font-size:16px">本次全部答对，掌握得很扎实！</div>';
+  $id('result-body').innerHTML =
+    '<div class="result-hero">' +
+    '<div class="score-big">' + pct + '<span class="sm"> %</span></div>' +
+    '<div class="pass-chip ' + (pct >= 80 ? 'pass' : 'fail') + '">' + (pct >= 80 ? '掌握良好' : '建议重点复盘错题') + '</div>' +
+    '<div class="result-meta">' + MODE_NAME[state.mode] + '完成 · 共作答 ' + total + ' 题 · 答对 ' + correct + ' 题 · 答错 ' + (total - correct) + ' 题 · 用时 ' + fmt(state.usedSec) + '</div>' +
+    '</div>' + wrongSec +
+    '<div class="r-btns">' +
+    (getWrongBook().length ? '<button class="btn" data-act="wrong">错题重练（' + getWrongBook().length + '题）</button>' : '') +
+    '<button class="btn ghost-w" data-act="again">再来一轮</button>' +
+    '<button class="btn ghost-w" data-act="home">返回首页</button>' +
+    '</div>';
+  switchScreen('result');
+}
+
+/* ===== 事件绑定 ===== */
+document.querySelectorAll('.mode-btn').forEach(function (b) { b.addEventListener('click', function () { startMode(b.dataset.mode); }); });
+$id('btn-prev').addEventListener('click', prev);
+$id('btn-next').addEventListener('click', next);
+$id('btn-submit').addEventListener('click', submitMock);
+$id('btn-flag').addEventListener('click', toggleFlag);
+$id('btn-nav-toggle').addEventListener('click', function () { $id('nav-panel').classList.toggle('open'); });
+$id('nav-grid').addEventListener('click', function (e) {
+  var c = e.target.closest('.nav-cell'); if (!c) return;
+  state.index = parseInt(c.dataset.i, 10); state.pendingSel = '';
+  renderQuestion(); renderNav(); updateProgress(); window.scrollTo(0, 0);
+});
+$id('btn-exit').addEventListener('click', function () {
+  if (state.mode === 'mock') {
+    var ansd = state.list.filter(answeredMock).length;
+    if (ansd > 0 && !confirm('模拟考试尚未交卷，退出后本次作答不计入成绩统计，确定退出吗？')) return;
+  }
+  exitToWelcome();
+});
+$id('q-card').addEventListener('click', function (e) {
+  var opt = e.target.closest('.opt');
+  if (opt && !opt.classList.contains('locked')) { onOptClick(opt.dataset.k); return; }
+  if (e.target.closest('#btn-confirm')) { confirmMulti(); return; }
+  if (e.target.closest('#btn-reveal')) { state.revealed[curQ().id] = true; renderQuestion(); return; }
+  var sg = e.target.closest('.sg-btn');
+  if (sg) { onSelfGrade(sg.dataset.v === 'yes'); return; }
+});
+$id('result-body').addEventListener('click', function (e) {
+  var wi = e.target.closest('.wi-head');
+  if (wi) { wi.parentElement.classList.toggle('open'); return; }
+  var sg = e.target.closest('.sg-btn');
+  if (sg && sg.dataset.qid) { mockSelfGrade(parseInt(sg.dataset.qid, 10), sg.dataset.v === 'yes'); return; }
+  var act = e.target.closest('[data-act]');
+  if (act) {
+    var a = act.dataset.act;
+    if (a === 'home') exitToWelcome();
+    else if (a === 'wrong') startMode('wrong');
+    else if (a === 'again') startMode(state.mode || 'seq');
+    else if (a === 'mock-again') startMode('mock');
+  }
+});
+$id('btn-clear-record').addEventListener('click', function () {
+  if (!confirm('确定清空全部练习记录、错题本与最佳成绩吗？此操作不可恢复。')) return;
+  localStorage.removeItem('aiexam_records');
+  localStorage.removeItem('aiexam_wrong');
+  localStorage.removeItem('aiexam_best');
+  renderWelcome();
+});
+document.addEventListener('keydown', function (e) {
+  if (!state.mode || !$id('screen-quiz').classList.contains('active')) return;
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  var q = curQ(); if (!q) return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); next(); return; }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); return; }
+  var k = e.key.toUpperCase();
+  if (k === 'F' && e.key.length === 1) { toggleFlag(); return; }
+  if (e.key === 'Enter') {
+    if (q.t === 'm' && isPractice(state.mode) && state.answers[q.id] === undefined) { if (state.pendingSel) confirmMulti(); }
+    else next();
+    return;
+  }
+  if (k.length === 1 && 'ABCD'.indexOf(k) >= 0) {
+    var idx = 'ABCD'.indexOf(k);
+    if (idx < q.o.length) onOptClick(k);
+  }
+});
+renderWelcome();
+</script>
+</body>
+</html>
